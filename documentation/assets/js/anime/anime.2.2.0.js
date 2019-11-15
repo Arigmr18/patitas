@@ -29,6 +29,7 @@
     begin: undefined,
     run: undefined,
     complete: undefined,
+    cleanup: undefined,
     loop: 1,
     direction: 'normal',
     autoplay: true,
@@ -865,6 +866,10 @@
       }
     }
 
+    instance.cleaner = function () {
+        if(instance.cleanup != undefined) setCallback('cleanup')
+    }
+
     instance.reset = function() {
       const direction = instance.direction;
       const loops = instance.loop;
@@ -988,7 +993,7 @@
   anime.easings = easings;
   anime.timeline = timeline;
   anime.random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
+  
   return anime;
 
 }));

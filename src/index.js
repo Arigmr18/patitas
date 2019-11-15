@@ -12,7 +12,8 @@ const defaultInstanceSettings = {
   loop: 1,
   direction: 'normal',
   autoplay: true,
-  timelineOffset: 0
+  timelineOffset: 0,
+  cleanup: null
 }
 
 const defaultTweenSettings = {
@@ -1122,6 +1123,11 @@ function anime(params = {}) {
     instance.reset();
     instance.play();
   }
+
+  instance.cleaner = function () {
+    if(instance.cleanup != null) setCallback('cleanup')
+  }
+
 
   instance.reset();
 
