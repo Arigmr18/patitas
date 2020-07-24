@@ -25,6 +25,122 @@ const defaultTweenSettings = {
 
 const validTransforms = ['translateX', 'translateY', 'translateZ', 'rotate', 'rotateX', 'rotateY', 'rotateZ', 'scale', 'scaleX', 'scaleY', 'scaleZ', 'skew', 'skewX', 'skewY', 'perspective', 'matrix', 'matrix3d'];
 
+const validSvgAttributes = [
+  'amplitude',
+  'azimuth',
+  'baseFrequency',
+  'baseline-shift',
+  'begin',
+  'bias',
+  'by',
+  'calcMode',
+  'color',
+  'cx',
+  'cy',
+  'd',
+  'diffuseConstant',
+  'display',
+  'divisor',
+  'dur',
+  'dx',
+  'dy',
+  'edgeMode',
+  'elevation',
+  'end',
+  'exponent',
+  'fill',
+  'fill-opacity',
+  'flood-color',
+  'flood-opacity',
+  'font-size',
+  'font-size-adjust',
+  'font-stretch',
+  'font-weight',
+  'from',
+  'fr',
+  'fx',
+  'fy',
+  'gradientTransform',
+  'height',
+  'intercept',
+  'k1',
+  'k2',
+  'k3',
+  'k4',
+  'kernelMatrix',
+  'keyPoints',
+  'keySplines',
+  'keyTimes',
+  'letter-spacing',
+  'lighting-color',
+  'limitingConeAngle',
+  'markerHeight',
+  'markerWidth',
+  'max',
+  'min',
+  'numOctaves',
+  'opacity',
+  'order',
+  'orient',
+  'overflow',
+  'overline-position',
+  'overline-thickness',
+  'path',
+  'pathLength',
+  'points',
+  'pointsAtX',
+  'pointsAtY',
+  'pointsAtZ',
+  'r',
+  'radius',
+  'repeatDur',
+  'rotate',
+  'rx',
+  'ry',
+  'scale',
+  'seed',
+  'spacing',
+  'specularConstant',
+  'specularExponent',
+  'spreadMethod',
+  'startOffset',
+  'stdDeviation',
+  'stop-color',
+  'stop-opacity',
+  'strikethrough-position',
+  'strikethrough-thickness',
+  'stroke',
+  'stroke-dasharray',
+  'stroke-dashoffset',
+  'stroke-miterlimit',
+  'stroke-opacity',
+  'stroke-width',
+  'surfaceScale',
+  'tableValues',
+  'target',
+  'targetX',
+  'targetY',
+  'text-anchor',
+  'textLength',
+  'to',
+  'transform',
+  'underline-position',
+  'underline-thickness',
+  'values',
+  'viewBox',
+  'width',
+  'word-spacing',
+  'x',
+  'x1',
+  'x2',
+  'xChannelSelector',
+  'y',
+  'y1',
+  'y2',
+  'yChannelSelector',
+  'z',
+];
+
 // Caching
 
 const cache = {
@@ -228,7 +344,7 @@ const penner = (() => {
       const a = minMax(amplitude, 1, 10);
       const p = minMax(period, .1, 2);
       return t => {
-        return (t === 0 || t === 1) ? t : 
+        return (t === 0 || t === 1) ? t :
           -a * Math.pow(2, 10 * (t - 1)) * Math.sin((((t - 1) - (p / (Math.PI * 2) * Math.asin(1 / a))) * (Math.PI * 2)) / p);
       }
     }
@@ -244,7 +360,7 @@ const penner = (() => {
     const easeIn = functionEasings[name];
     eases['easeIn' + name] = easeIn;
     eases['easeOut' + name] = (a, b) => t => 1 - easeIn(a, b)(1 - t);
-    eases['easeInOut' + name] = (a, b) => t => t < 0.5 ? easeIn(a, b)(t * 2) / 2 : 
+    eases['easeInOut' + name] = (a, b) => t => t < 0.5 ? easeIn(a, b)(t * 2) / 2 :
       1 - easeIn(a, b)(t * -2 + 2) / 2;
   });
 
@@ -428,7 +544,7 @@ function getCSSValue(el, prop, unit) {
 }
 
 function getAnimationType(el, prop) {
-  if (is.dom(el) && !is.inp(el) && (getAttribute(el, prop) || (is.svg(el) && el[prop]))) return 'attribute';
+  if (is.dom(el) && !is.inp(el) && (getAttribute(el, prop) || (is.svg(el) && arrayContains(validSvgAttributes, prop)))) return 'attribute';
   if (is.dom(el) && arrayContains(validTransforms, prop)) return 'transform';
   if (is.dom(el) && (prop !== 'transform' && getCSSValue(el, prop))) return 'css';
   if (el[prop] != null) return 'object';
@@ -501,7 +617,7 @@ function getRectLength(el) {
 
 function getLineLength(el) {
   return getDistance(
-    {x: getAttribute(el, 'x1'), y: getAttribute(el, 'y1')}, 
+    {x: getAttribute(el, 'x1'), y: getAttribute(el, 'y1')},
     {x: getAttribute(el, 'x2'), y: getAttribute(el, 'y2')}
   );
 }
@@ -838,7 +954,7 @@ let pausedInstances = [];
 let raf;
 
 const engine = (() => {
-  function play() { 
+  function play() {
     raf = requestAnimationFrame(step);
   }
   function step(t) {
