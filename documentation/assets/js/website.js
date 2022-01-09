@@ -1,4 +1,4 @@
-// import anime from '../../../lib/anime.es.js';
+// import anime from '../../../src/index.js';
 
 /* Ontersection observer */
 
@@ -117,20 +117,30 @@ function isElementInViewport(el, inCB, outCB, rootMargin) {
   observer.observe(el);
 }
 
-function fitElementToParent(el, padding) {
-  var timeout = null;
+function fitElementToParent(el, padding, exception) {
+  let windowWidth = 0;
+  let timeout = 0;
   function resize() {
-    if (timeout) clearTimeout(timeout);
     anime.set(el, {scale: 1});
+    if (exception) anime.set(exception, {scale: 1});
     var pad = padding || 0;
     var parentEl = el.parentNode;
     var elOffsetWidth = el.offsetWidth - pad;
     var parentOffsetWidth = parentEl.offsetWidth;
     var ratio = parentOffsetWidth / elOffsetWidth;
-    timeout = setTimeout(anime.set(el, {scale: ratio}), 100);
+    var invertedRatio = elOffsetWidth / parentOffsetWidth;
+    anime.set(el, {scale: ratio});
+    if (exception) anime.set(exception, {scale: invertedRatio});
   }
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', function() {
+    if (window.innerWidth === windowWidth) return;
+    clearTimeout(timeout);
+    timeout = setTimeout(function() {
+      windowWidth = window.innerWidth;
+      resize();
+    }, 15);
+  });
 }
 
 // Update date and version number
@@ -153,7 +163,7 @@ var logoAnimation = (function() {
   var logoAnimationEl = document.querySelector('.logo-animation');
   var bouncePath = anime.path('.bounce path');
 
-  fitElementToParent(logoAnimationEl, 0);
+  fitElementToParent(logoAnimationEl, 0, '.bounce svg');
 
   anime.set(['.letter-a', '.letter-n', '.letter-i'], {translateX: 70});
   anime.set('.letter-e', {translateX: -70});
@@ -441,10 +451,8 @@ var sphereAnimation = (function() {
   var sphereEl = document.querySelector('.sphere-animation');
   var spherePathEls = sphereEl.querySelectorAll('.sphere path');
   var pathLength = spherePathEls.length;
-  var hasStarted = false;
+  var introPlayed = false;
   var aimations = [];
-
-  fitElementToParent(sphereEl);
 
   var breathAnimation = anime({
     begin: function() {
@@ -504,7 +512,10 @@ var sphereAnimation = (function() {
     }, 0);
 
   function play() {
-    introAnimation.play();
+    if (!introPlayed) {
+      introAnimation.play();
+      introPlayed = true;
+    }
     breathAnimation.play();
     shadowAnimation.play();
   }
